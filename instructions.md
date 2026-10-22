@@ -2,13 +2,13 @@
 
 ## Documentation
 
-- [Bitcoin Control Center](https://www.bitcoincontrolcenter.com) — the product site.
-- [Source code and README](https://github.com/hoseki-inc/bitcoin-control-center) — the application this package runs.
+- [Bitcoin Control Center README](https://github.com/hoseki-inc/bitcoin-control-center/blob/main/README.md) — the upstream guide to the application, its settings and its data.
 
 ## Before you begin
 
-Bitcoin Control Center requires Electrs for balances and transaction history,
-and mempool for statement prices and transaction details.
+Bitcoin Control Center requires Electrs for balances and transaction history.
+It also requires mempool for statement prices and transaction details, unless
+you point **Configure → Mempool URL Override** at another mempool instance.
 Wait until Electrs is running and fully synchronized before relying on portfolio
 data.
 
@@ -18,18 +18,24 @@ signatures on the hardware wallet itself.
 
 ## Set up your portfolio
 
-1. Open the **Web Interface** from the Bitcoin Control Center service page.
-2. Open **Settings**, enter the name that should appear on generated statements,
+1. Run the **Set Password** task and save the username and password it shows.
+   You can run **Set Password** again at any time to replace the password.
+2. Open the **Web Interface** from the Bitcoin Control Center service page and
+   sign in with those credentials when your browser asks.
+3. Open **Settings**, enter the name that should appear on generated statements,
    and save it.
-3. Open **Accounts** and select **Add Account**.
-4. Choose the appropriate account type and follow the on-screen import or
+4. Open **Accounts** and select **Add Account**.
+5. Choose the appropriate account type and follow the on-screen import or
    connection steps.
-5. Wait for self-custody accounts to finish synchronizing before checking their
+6. Wait for self-custody accounts to finish synchronizing before checking their
    history.
 
 Supported account workflows include watch-only Bitcoin accounts, supported
 hardware wallets, supported exchanges, manually maintained Bitcoin balances,
 and Bitcoin ETF holdings.
+
+If you add a Tor address to the web interface, turn on **SSL** when you add
+it. An onion address without SSL does not ask for the password.
 
 Direct hardware-wallet connections depend on browser USB support and permission.
 Use a supported Chromium-based browser when a workflow connects directly to a
@@ -66,23 +72,15 @@ complete first.
 
 ## Configure mempool and logging
 
-The mempool service is discovered automatically. If it is unavailable,
-Control Center uses public mempool.space. Use **Configure → Mempool URL Override**
-to choose an explicit HTTP(S) endpoint. The same action changes the log level.
+By default, Control Center uses the mempool service on this server. To use
+another instance instead, such as `https://mempool.space`, enter its HTTP(S) URL
+in **Configure → Mempool URL Override**; mempool is then no longer required.
+Clear the field to return to the local service. The same action changes the log level.
 **Info** is the normal setting. Use **Debug** or **Trace** only while diagnosing
 a problem, then return to **Info**.
 
 Before sharing logs, remove descriptors, extended public keys, exchange account
 details, credentials, and other identifying information.
-
-## Backups
-
-Use the normal StartOS backup flow for Bitcoin Control Center. Its `main` volume
-contains the database and the local encryption material needed for saved
-exchange credentials, so they are backed up and restored together.
-
-After restoring, start the service and confirm that accounts, history, settings,
-and exchange connections are available before deleting older backups.
 
 ## Troubleshooting
 

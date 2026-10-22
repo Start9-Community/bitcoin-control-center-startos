@@ -1,3 +1,4 @@
+import { configYaml } from './fileModels/config.yaml'
 import { electrsDescription, mempoolDescription } from './manifest/i18n'
 import { sdk } from './sdk'
 
@@ -14,8 +15,8 @@ const electrs = sdk.Dependency.required('electrs', {
   healthChecks: ['electrs', 'sync'],
 })
 
-/** Mempool supplies statement prices and transaction details. */
-const mempool = sdk.Dependency.required('mempool', {
+/** Mempool supplies statement prices and transaction details, unless Configure names another instance. */
+const mempool = sdk.Dependency.optional('mempool', {
   description: mempoolDescription,
   metadata: {
     title: 'Mempool',
@@ -25,6 +26,8 @@ const mempool = sdk.Dependency.required('mempool', {
   versionRange: '>=3.3.1:10',
   kind: 'running',
   healthChecks: ['webui'],
+  enabled: async ({ effects }) =>
+    !(await configYaml.read((c) => c['mempool-url']).const(effects)),
 })
 
 export const dependencies = sdk.Dependencies.of()
