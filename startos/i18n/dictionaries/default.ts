@@ -23,15 +23,14 @@ const dict = {
   Debug: 14,
   Trace: 15,
 
-  // actions/setPassword.ts, init/watchPassword.ts
-  'Set Password': 16,
-  'Generate a new random password for the web interface. Replaces any existing password.': 17,
-  'This replaces the current password, and the old one stops working.': 18,
-  'Web Interface Credentials': 19,
-  'Your browser asks for these when you open the web interface.': 20,
-  Username: 21,
-  Password: 22,
-  'Set a password before using Bitcoin Control Center': 23,
+  // actions/setPin.ts, init/requirePin.ts
+  'Set PIN': 16,
+  'Choose the 6-digit PIN you’ll use to open Bitcoin Control Center. Running this again replaces it and signs everyone out.': 17,
+  PIN: 18,
+  'Confirm PIN': 19,
+  'Use exactly 6 digits.': 20,
+  'The PINs don’t match.': 21,
+  'Set a PIN before using Bitcoin Control Center': 22,
 } as const
 
 /**

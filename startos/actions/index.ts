@@ -1,7 +1,5 @@
 import { sdk } from '../sdk'
 import { configure } from './configure'
-import { setPassword } from './setPassword'
+import { setPin } from './setPin'
 
-export const actions = sdk.Actions.of()
-  .addAction(setPassword)
-  .addAction(configure)
+export const actions = sdk.Actions.of().addAction(setPin).addAction(configure)

@@ -16,26 +16,31 @@ Bitcoin Control Center is watch-only software. Never enter a wallet seed or
 private key. Import only public descriptors or extended public keys, and approve
 signatures on the hardware wallet itself.
 
+## Set your PIN
+
+Run the **Set PIN** task before the first start, and choose the 6-digit PIN
+you'll use to open Control Center. Save it in your password manager. If you
+forget it, run **Set PIN** again: it replaces the PIN, signs everyone out, and
+keeps your data.
+
+Control Center accepts your PIN only over an encrypted connection: an address that
+starts with `https://`, or its Tor `.onion` address.
+
 ## Set up your portfolio
 
-1. Run the **Set Password** task and save the username and password it shows.
-   You can run **Set Password** again at any time to replace the password.
-2. Open the **Web Interface** from the Bitcoin Control Center service page and
-   sign in with those credentials when your browser asks.
-3. Open **Settings**, enter the name that should appear on generated statements,
+1. Open the **Web Interface** from the Bitcoin Control Center service page and
+   enter your PIN.
+2. Open **Settings**, enter the name that should appear on generated statements,
    and save it.
-4. Open **Accounts** and select **Add Account**.
-5. Choose the appropriate account type and follow the on-screen import or
+3. Open **Accounts** and select **Add Account**.
+4. Choose the appropriate account type and follow the on-screen import or
    connection steps.
-6. Wait for self-custody accounts to finish synchronizing before checking their
+5. Wait for self-custody accounts to finish synchronizing before checking their
    history.
 
 Supported account workflows include watch-only Bitcoin accounts, supported
 hardware wallets, supported exchanges, manually maintained Bitcoin balances,
 and Bitcoin ETF holdings.
-
-If you add a Tor address to the web interface, turn on **SSL** when you add
-it. An onion address without SSL does not ask for the password.
 
 Direct hardware-wallet connections depend on browser USB support and permission.
 Use a supported Chromium-based browser when a workflow connects directly to a

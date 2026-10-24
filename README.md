@@ -51,7 +51,7 @@ All state lives on one volume, mounted read-write at `/data` (`DATA_DIR`).
 | -------------------------- | ---------------------------------------------------------------------------------------------- |
 | `/data` (root)             | Sentinel's embedded SQLite database and the local key that encrypts saved exchange credentials |
 | `/data/start9/config.yaml` | Settings written by the Configure action                                                       |
-| `/data/start9/store.json`  | The web interface password, written by the Set Password action                                 |
+| `/data/start9/pin.json`    | When the Set PIN action last ran; the PIN itself is only a hash in Sentinel's database         |
 
 StartOS creates and restores the volume as root. The `data-owner` step hands everything under `/data` to the `node` user on every start, so a restored or hand-copied file is never left unwritable.
 
@@ -66,14 +66,14 @@ The package owns two files on the `main` volume.
 - **Keys:** `mempool-url` (an HTTP(S) URL, or null to use the local mempool, which makes mempool a required dependency) and `log-level` (`error`, `warn`, `info`, `debug` or `trace`; default `info`). An invalid value reads as its default rather than stopping the service.
 - **Hand edits:** survive, and take effect on the next start. The package re-asserts nothing in this file.
 
-### `start9/store.json`
+### `start9/pin.json`
 
-- **Seeding:** none. Until the Set Password action first runs, the file does not exist and a critical task blocks startup.
-- **Writer:** only the Set Password action, which stores a generated `uiPassword`.
-- **Keys:** `uiPassword`, kept in cleartext because the StartOS reverse proxy checks it on each request. It never reaches Sentinel.
-- **Hand edits:** survive and apply immediately; the proxy re-reads the password whenever the file changes. Removing the key raises the critical task again.
+- **Seeding:** none. Until the Set PIN action first runs, the file does not exist and a critical task blocks startup.
+- **Writer:** only the Set PIN action, which records `pinSetAt` after leaving the hashed PIN in `/data/new-pin` for Sentinel to apply.
+- **Keys:** `pinSetAt`, a timestamp. The PIN never appears here.
+- **Hand edits:** survive. Sentinel restarts whenever the file changes; removing `pinSetAt` raises the critical task again but leaves the current PIN in place.
 
-Everything else reaches Sentinel as environment variables that the package sets on every start, so they cannot be overridden by hand: `ELECTRUM_HOST`, `ELECTRUM_PORT`, `ELECTRUM_PROTOCOL` (`tcp`), `MEMPOOL_API_URL`, `SENTINEL_ALLOWED_HOSTS`, `BITCOIN_NETWORK` (`mainnet`) and `LOG_LEVEL`. Electrum server settings saved in the app itself would take precedence over the Electrum variables, but the web app only offers those settings on desktop.
+Everything else reaches Sentinel as environment variables that the package sets on every start, so they cannot be overridden by hand: `ELECTRUM_HOST`, `ELECTRUM_PORT`, `ELECTRUM_PROTOCOL` (`tcp`), `MEMPOOL_API_URL`, `SENTINEL_ALLOWED_HOSTS`, `BITCOIN_NETWORK` (`mainnet`), `LOG_LEVEL` and `SENTINEL_PIN` (`startos`). Electrum server settings saved in the app itself would take precedence over the Electrum variables, but the web app only offers those settings on desktop.
 
 ## Dependencies
 
@@ -94,15 +94,13 @@ One interface serves both the web app and Sentinel's API.
 | ------------ | ---- | ---- | -------- | ------------------------------------------ |
 | `main`       | ui   | 3400 | HTTP     | The Bitcoin Control Center web app and API |
 
-Bitcoin Control Center has no login of its own, so the StartOS reverse proxy gates the interface with HTTP basic auth: username `admin` and the password from the Set Password action. The browser shows its own sign-in prompt, and a request without the credentials gets `401` before it reaches Sentinel. The proxy enforces it on every TLS address, LAN and public domains alike; a plain-HTTP request to a domain is redirected to HTTPS first.
-
-The gate does not cover the interface's plain-HTTP port on the internal StartOS bridge, which other services on the same server, and a Tor onion address added without SSL, reach directly.
+Sentinel requires the PIN: every API route except sign-in and health needs a session started with it, and it accepts the PIN only over HTTPS or a Tor onion address. Wrong PINs are delayed: five free tries, then 30 seconds doubling up to an hour, counted across all devices. Sessions end when the tab closes or locks, on Sign out everywhere, and whenever Sentinel restarts.
 
 Sentinel also accepts requests only for the addresses StartOS has enabled for this interface. The package passes that list as `SENTINEL_ALLOWED_HOSTS` and restarts Sentinel whenever it changes, so turning an address on or off takes effect within a restart.
 
 ## Installation and First-Run Flow
 
-Install Electrs, and mempool unless you will point the Configure action at another instance. A critical **Set Password** task blocks startup until it runs; it returns the `admin` credentials once. Then start the service and sign in when the browser asks.
+Install Electrs, and mempool unless you will point the Configure action at another instance. A critical **Set PIN** task blocks startup until the owner chooses a 6-digit PIN, on a fresh install and on an install updated from a version without PINs. Then start the service, open the web interface at an `https://` or `.onion` address and enter the PIN.
 
 On the first start, Sentinel creates its database and encryption key on the `main` volume. Self-custody accounts begin synchronizing once Electrs has finished indexing.
 
@@ -110,13 +108,13 @@ On the first start, Sentinel creates its database and encryption key on the `mai
 
 Two actions, both available in any service state.
 
-**Set Password.** Generates a new random 32-character password for the web interface and returns it with the username `admin`. Run it at first install, and again to rotate the password or recover a lost one. It changes `start9/store.json` only and applies without a restart; the old password stops working at once. Each run replaces the password, so the UI asks for confirmation once one exists.
+**Set PIN.** Asks for a 6-digit PIN twice and hands it to Sentinel, which stores it hashed. Run it at first install, and again to replace a forgotten PIN; each run signs everyone out and keeps all data. It writes `start9/pin.json`, which restarts Sentinel to apply the PIN.
 
 **Configure.** Run it to point statements at a different mempool instance, or to raise logging while diagnosing a problem. It changes `start9/config.yaml`, and setting or clearing the override removes or restores the mempool dependency. Saving restarts Sentinel within seconds, which briefly interrupts the web app. Safe to repeat; saving the same values changes nothing.
 
 ## Tasks
 
-One task, **Set Password**, of `critical` severity. The package raises it while `start9/store.json` holds no password: on a fresh install, or on an existing install that has never set one. It blocks startup until the Set Password action runs, which clears it.
+One task, **Set PIN**, of `critical` severity. The package raises it while `start9/pin.json` records no PIN: on a fresh install, or on an install updated from a version without PINs. It blocks startup until the Set PIN action runs, which clears it.
 
 ## Health Checks
 
@@ -128,7 +126,7 @@ One check, shown as **Web Interface**.
 
 ## Backups and Restore
 
-The whole `main` volume is copied file by file (`ofVolumes`). That includes the database, the encryption key for saved exchange credentials, `start9/config.yaml` and the web interface password in `start9/store.json`, so they always restore together. Nothing is excluded.
+The whole `main` volume is copied file by file (`ofVolumes`). That includes the database, the encryption key for saved exchange credentials, `start9/config.yaml` and `start9/pin.json`, so they always restore together. Nothing is excluded.
 
 A restored instance needs nothing re-entered. On its first start, `data-owner` fixes file ownership, and accounts resume synchronizing from Electrs.
 
@@ -137,8 +135,7 @@ A restored instance needs nothing re-entered. On its first start, `data-owner` f
 1. **Mainnet only.** The package always runs Sentinel on Bitcoin mainnet.
 2. **Electrs only.** Balances and history always come from the Electrs service on this server; the desktop app's choice of Electrum server is not offered here.
 3. **The web app is unavailable while Electrs is not ready.** Sentinel waits for Electrs before it serves anything, so while Electrs is stopped, missing or still indexing, the web app does not load.
-4. **Login is StartOS basic auth, not an app account.** There is one user, `admin`, and the password comes from the Set Password action.
-5. **The internal plain-HTTP port is not password-protected.** Other services on the server, and an onion address added without SSL, reach the web app without the password.
+4. **One PIN for the whole app.** There are no separate users or profiles; the PIN comes from the Set PIN action.
 
 ---
 
@@ -153,7 +150,7 @@ volumes:
   main: /data
 file_models:
   - start9/config.yaml
-  - start9/store.json
+  - start9/pin.json
 startos_managed_env_vars:
   - ELECTRUM_HOST
   - ELECTRUM_PORT
@@ -162,17 +159,18 @@ startos_managed_env_vars:
   - SENTINEL_ALLOWED_HOSTS
   - BITCOIN_NETWORK
   - LOG_LEVEL
+  - SENTINEL_PIN
 dependencies:
   electrs: required
   mempool: optional # required while mempool-url is unset
 interfaces:
   main: { type: ui, port: 3400 }
-auth: startos-basic-auth # user admin, password from set-password
+auth: sentinel-pin # 6 digits, from set-pin; https or onion only
 actions:
-  - set-password
+  - set-pin
   - configure
 tasks:
-  - set-password: critical # while no password is stored
+  - set-pin: critical # while no PIN is set
 health_checks:
   - primary
 ```

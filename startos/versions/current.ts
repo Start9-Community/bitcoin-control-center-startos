@@ -1,7 +1,7 @@
 import { IMPOSSIBLE, VersionInfo } from '@start9labs/start-sdk'
 
 export const current = VersionInfo.of({
-  version: '1.0.0:0',
+  version: '1.1.0:0',
   releaseNotes: {
     en_US: 'First release on the Start9 Community Registry.',
     es_ES: 'Primera versión en el registro de la comunidad de Start9.',

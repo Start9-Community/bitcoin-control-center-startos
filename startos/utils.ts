@@ -14,7 +14,5 @@ export const electrsPort = 50001
 export const mempoolHostId = 'main'
 export const mempoolPort = 8080
 
-export const uiUsername = 'admin'
-
 /** The image's non-root user, which owns the data folder. */
 export const appUser = 'node'
