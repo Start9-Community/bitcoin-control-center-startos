@@ -6,7 +6,8 @@ export const manifest = setupManifest({
   id: 'hoseki-sentinel',
   title: 'Bitcoin Control Center',
   license: 'Apache-2.0',
-  packageRepo: 'https://github.com/hoseki-inc/bitcoin-control-center-startos',
+  packageRepo:
+    'https://github.com/Start9-Community/bitcoin-control-center-startos',
   upstreamRepo: 'https://github.com/hoseki-inc/bitcoin-control-center',
   marketingUrl: 'https://www.bitcoincontrolcenter.com',
   donationUrl: null,
@@ -15,7 +16,7 @@ export const manifest = setupManifest({
   images: {
     main: {
       // The same image the Umbrel package runs, published by the upstream release.
-      source: { dockerTag: 'ghcr.io/hoseki-inc/bitcoin-control-center:1.0.0' },
+      source: { dockerTag: 'ghcr.io/hoseki-inc/bitcoin-control-center:1.1.0' },
       arch: ['x86_64', 'aarch64'],
     },
   },

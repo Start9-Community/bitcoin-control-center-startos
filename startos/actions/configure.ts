@@ -6,7 +6,7 @@ const inputSpec = sdk.InputSpec.of({
   'mempool-url': sdk.Value.text({
     name: i18n('Mempool URL Override'),
     description: i18n(
-      'Leave blank to use the installed mempool service, or public mempool.space when it is not installed. Enter an HTTP(S) URL to use another instance. Statements need it to be running; missing prices use public mempool.space only while "Allow fallbacks" is on in Settings.',
+      'Leave blank to use the mempool service on this server, which is then required. Enter an HTTP(S) URL, such as https://mempool.space, to use another instance instead. Statements need it to be running; missing prices use public mempool.space only while "Allow fallbacks" is on in Settings.',
     ),
     required: false,
     default: null,

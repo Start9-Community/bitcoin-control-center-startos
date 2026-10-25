@@ -1,5 +1,6 @@
 import { resolveElectrs } from './electrs'
 import { configYaml } from './fileModels/config.yaml'
+import { pinJson } from './fileModels/pin.json'
 import { i18n } from './i18n'
 import { resolveMempoolUrl } from './mempool'
 import { sdk } from './sdk'
@@ -25,6 +26,8 @@ export const main = sdk.setupMain(async ({ effects }) => {
     .const()
 
   const config = await configYaml.read().const(effects)
+  // Set PIN writes this file after leaving the new PIN for Sentinel, so watching it restarts Sentinel to apply it.
+  await pinJson.read().const(effects)
   const mempoolUrl = await resolveMempoolUrl(effects, config?.['mempool-url'])
   const electrs = await resolveElectrs(effects)
 
@@ -63,6 +66,8 @@ export const main = sdk.setupMain(async ({ effects }) => {
           ELECTRUM_PROTOCOL: 'tcp',
           BITCOIN_NETWORK: 'mainnet',
           LOG_LEVEL: config?.['log-level'] ?? 'info',
+          // Every route needs the PIN, set from the Set PIN action and accepted over HTTPS or Tor only.
+          SENTINEL_PIN: 'startos',
         },
       },
       ready: {

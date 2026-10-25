@@ -33,12 +33,14 @@ export const electrsDescription = {
 }
 
 export const mempoolDescription = {
-  en_US: 'Required for Bitcoin prices and transaction details in statements.',
+  en_US:
+    'Supplies Bitcoin prices and transaction details for statements, unless Configure names another mempool instance.',
   es_ES:
-    'Necesario para los precios de Bitcoin y los detalles de transacciones en los estados de cuenta.',
+    'Proporciona los precios de Bitcoin y los detalles de transacciones de los estados de cuenta, salvo que Configurar indique otra instancia de mempool.',
   de_DE:
-    'Erforderlich für Bitcoin-Preise und Transaktionsdetails in Kontoauszügen.',
-  pl_PL: 'Wymagany do cen Bitcoin i szczegółów transakcji w wyciągach.',
+    'Liefert Bitcoin-Preise und Transaktionsdetails für Kontoauszüge, sofern unter Konfigurieren keine andere Mempool-Instanz angegeben ist.',
+  pl_PL:
+    'Dostarcza ceny Bitcoin i szczegóły transakcji do wyciągów, chyba że w Konfiguruj wskazano inną instancję mempool.',
   fr_FR:
-    'Requis pour les prix du Bitcoin et le détail des transactions dans les relevés.',
+    'Fournit les prix du Bitcoin et le détail des transactions des relevés, sauf si Configurer désigne une autre instance mempool.',
 }
