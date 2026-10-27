@@ -1,5 +1,5 @@
 {
-  "name": "bitcoin-control-center-startos",
+  "name": "hoseki-sentinel-startos",
   "dependencies": {
     "@start9labs/start-sdk": "3.1.0"
   },
