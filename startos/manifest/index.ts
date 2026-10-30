@@ -15,7 +15,7 @@ export const manifest = setupManifest({
   images: {
     main: {
       // The same image the Umbrel package runs, published by the upstream release.
-      source: { dockerTag: 'ghcr.io/hoseki-inc/bitcoin-control-center:1.2.0' },
+      source: { dockerTag: 'ghcr.io/hoseki-inc/bitcoin-control-center:1.3.1' },
       arch: ['x86_64', 'aarch64'],
     },
   },
